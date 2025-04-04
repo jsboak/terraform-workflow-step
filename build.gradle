@@ -11,7 +11,7 @@ apply plugin: 'idea'
 sourceCompatibility = 11.0
 ext.rundeckPluginVersion= '2.0'
 ext.rundeckVersion= '5.0.2-20240212'
-ext.pluginClassNames='com.plugin.terraform.Terraform'
+ext.pluginClassNames='com.plugin.terraform.TerraformStepPlugin'
 
 
 repositories {

@@ -7,12 +7,12 @@ import groovy.json.JsonSlurper
 
 class TerraformCommandExecutor {
 
-    void executeInit(PluginStepContext context, File workDir, Map<String, String> env, String terraformPath) {
+    static void executeInit(PluginStepContext context, File workDir, Map<String, String> env, String terraformPath) {
         runCommand(context, workDir, env, terraformPath, ["init"])
     }
 
-    void executePlan(PluginStepContext context, File workDir, Map<String, String> env,
-                     String terraformPath, String variables, String variableFiles) {
+    static void executePlan(PluginStepContext context, File workDir, Map<String, String> env,
+                            String terraformPath, String variables, String variableFiles) {
         def args = ["plan", "-detailed-exitcode", "-out=tfplan"]
         addVariableArgs(args, variables, variableFiles)
         def result = runCommand(context, workDir, env, terraformPath, args)
@@ -30,26 +30,26 @@ class TerraformCommandExecutor {
         }
     }
 
-    void executeApply(PluginStepContext context, File workDir, Map<String, String> env,
-                      String terraformPath, String variables, String variableFiles) {
+    static void executeApply(PluginStepContext context, File workDir, Map<String, String> env,
+                             String terraformPath, String variables, String variableFiles) {
         def args = ["apply", "-auto-approve"]
         addVariableArgs(args, variables, variableFiles)
         runCommand(context, workDir, env, terraformPath, args)
     }
 
-    void executeDestroy(PluginStepContext context, File workDir, Map<String, String> env,
-                        String terraformPath, String variables, String variableFiles) {
+    static void executeDestroy(PluginStepContext context, File workDir, Map<String, String> env,
+                               String terraformPath, String variables, String variableFiles) {
         def args = ["destroy", "-auto-approve"]
         addVariableArgs(args, variables, variableFiles)
         runCommand(context, workDir, env, terraformPath, args)
     }
 
-    void executeOutput(PluginStepContext context, File workDir, Map<String, String> env, String terraformPath) {
+    static void executeOutput(PluginStepContext context, File workDir, Map<String, String> env, String terraformPath) {
         def result = runCommand(context, workDir, env, terraformPath, ["output", "-json"])
         context.dataContext.put("terraform", parseOutputJson(result.output))
     }
 
-    void executeValidate(PluginStepContext context, File workDir, Map<String, String> env, String terraformPath) {
+    static void executeValidate(PluginStepContext context, File workDir, Map<String, String> env, String terraformPath) {
         runCommand(context, workDir, env, terraformPath, ["validate"])
     }
 
