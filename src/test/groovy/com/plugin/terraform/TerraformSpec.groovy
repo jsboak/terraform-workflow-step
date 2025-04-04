@@ -17,7 +17,7 @@ class TerraformSpec extends Specification {
 
         given:
 
-        def example = new Terraform()
+        def example = new TerraformStepPlugin()
         def context = getContext(Mock(PluginLogger))
         def configuration = [example:"example123",exampleBoolean:"true"]
 
@@ -32,7 +32,7 @@ class TerraformSpec extends Specification {
 
         given:
 
-        def example = new Terraform()
+        def example = new TerraformStepPlugin()
         def logger = Mock(PluginLogger)
         def context = getContext(logger)
         def configuration = [example:"example123",exampleBoolean:"false",exampleFreeSelect:"Beige"]
