@@ -91,7 +91,7 @@ Terrraform must be installed on the Rundeck server and available to the `rundeck
       *  Add Variables:
         ```
         content=Hello from Rundeck!
-        filename: hello.txt
+        filename=hello.txt
         ```
     *   Add a final **Terraform** step:
       *   Terraform Command: **apply**
@@ -99,6 +99,6 @@ Terrraform must be installed on the Rundeck server and available to the `rundeck
       *   Add  Variables:
       ```
       content=Hello from Rundeck!
-      filename: hello.txt                            
+      filename=hello.txt                            
       ```                          
 3. Run the Job and verify that the `hello.txt` file is created in the working directory with the contents "Hello from Rundeck!".
