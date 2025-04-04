@@ -2,6 +2,9 @@
 
 WorkflowStep Plugin for Rundeck to orchestrate Terraform operations
 
+![Screenshot 2025-04-04 at 12 53 25 PM](https://github.com/user-attachments/assets/9c85dcce-33ea-408b-951c-e06cc81aa336)
+
+
 ## Install the Plugin
 
 1. Download the latest package from the releases
