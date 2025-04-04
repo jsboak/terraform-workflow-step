@@ -1,3 +1,3 @@
-# terraform Node Step Plugin
+# Terraform Workflow Step Plugin
 
-This is a template node step plugin that was build using the [rundeck-plugin-bootstrap](https://github.com/rundeck/plugin-bootstrap)
+WorkflowStep Plugin for Rundeck to orchestrate Terraform operations

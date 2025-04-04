@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # IntelliJ IDEA
 .idea/
 *.iml
@@ -19,6 +20,21 @@ gradle-app.setting
 *.log
 
 # Package files
+=======
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+>>>>>>> 37e29b7b41cd795d385e397e06946e2d100ecdda
 *.jar
 *.war
 *.nar
@@ -27,6 +43,7 @@ gradle-app.setting
 *.tar.gz
 *.rar
 
+<<<<<<< HEAD
 # virtual machine crash logs
 hs_err_pid*
 
@@ -35,3 +52,8 @@ hs_err_pid*
 
 # Windows
 Thumbs.db
+=======
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+replay_pid*
+>>>>>>> 37e29b7b41cd795d385e397e06946e2d100ecdda
