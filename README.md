@@ -89,15 +89,15 @@ Terrraform must be installed on the Rundeck server and available to the `rundeck
       *   Terraform Command: **plan**
       *   Working Directory: `/path/to/test/terraform`
       *  Add Variables:
-        ```
-        content=Hello from Rundeck!
-        filename=hello.txt
-        ```
+      ```hcl
+      content=Hello from Rundeck!
+      filename=hello.txt
+      ```
     *   Add a final **Terraform** step:
       *   Terraform Command: **apply**
       *   Working Directory: `/path/to/test/terraform`
       *   Add  Variables:
-      ```
+      ```hcl
       content=Hello from Rundeck!
       filename=hello.txt                            
       ```                          
