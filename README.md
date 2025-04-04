@@ -11,16 +11,20 @@ WorkflowStep Plugin for Rundeck to orchestrate Terraform operations
 
 3. (Optional) Verify the plugin is installed by going to the `System` -> `Plugins` page in the GUI and looking for the plugin in the list of installed plugins.
 
-## Test the Plugin
+## Use the Plugin
 
-**Prerequisite**: Terrraform must be installed on the Rundeck server and available to the `rundeck` user.  You can confirm this with `sudo -u rundeck which terraform`.
+### Prerequisites
+Terrraform must be installed on the Rundeck server and available to the `rundeck` user.  You can confirm this with `sudo -u rundeck which terraform`.
 
+### Setup
 1. Make a directory for testing: `mkdir -p /path/to/test/terraform`
 2. `cd /path/to/test/terraform`
 3. Make sure the working directory is owned by the `rundeck` user and group:
     * `sudo chown -R rundeck:rundeck /path/to/test/terraform`
     * `sudo chmod -R 755 /path/to/test/terraform`
-4. Create a file called `text.tf` with the following contents:
+
+### Simple Example
+1. Create a file called `text.tf` with the following contents:
     ```hcl
     # test.tf
     terraform {
@@ -32,7 +36,7 @@ WorkflowStep Plugin for Rundeck to orchestrate Terraform operations
       filename = "hello.txt"
     }
     ```
-5. In Rundeck:
+2. In Rundeck:
     *   Create a new Job
     *   Add a Workflow Step
     *   Select **Terraform** from the step plugins
@@ -46,5 +50,55 @@ WorkflowStep Plugin for Rundeck to orchestrate Terraform operations
     *   Terraform Command: apply
     *   Working Directory: `/path/to/test/terraform`
 
-6. Run the Job and verify that the `hello.txt` file is created in the working directory with the contents "Hello, Rundeck!".
+3. Run the Job and verify that the `hello.txt` file is created in the working directory with the contents "Hello, Rundeck!".
     *  Optionally run the Job in Debug mode to help with troubleshooting the configuration.
+
+### Example with Inline Variables
+
+1. Create a file called `text.tf` with the following contents:
+    ```hcl
+   # test.tf
+   terraform {
+   required_version = ">= 0.12"
+   }
+   
+   variable "content" {
+   type = string
+   description = "Content to write to file"
+   }
+   
+   variable "filename" {
+   type = string
+   description = "Name of file to create"
+   }
+   
+   resource "local_file" "test" {
+   content  = var.content
+   filename = var.filename
+   }
+    ```
+
+2. In Rundeck:
+    *   Create a new Job
+    *   Add a Workflow Step
+    *   Select **Terraform** from the step plugins
+    *   Configure the step:
+      *   Terraform Command: **init**
+        *   Working Directory: `/path/to/test/terraform`
+    *   Add another **Terraform** step:
+      *   Terraform Command: **plan**
+      *   Working Directory: `/path/to/test/terraform`
+      *  Add Variables:
+        ```
+        content=Hello from Rundeck!
+        filename: hello.txt
+        ```
+    *   Add a final **Terraform** step:
+      *   Terraform Command: **apply**
+      *   Working Directory: `/path/to/test/terraform`
+      *   Add  Variables:
+      ```
+      content=Hello from Rundeck!
+      filename: hello.txt                            
+      ```                          
+3. Run the Job and verify that the `hello.txt` file is created in the working directory with the contents "Hello from Rundeck!".

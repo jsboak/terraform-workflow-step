@@ -3,7 +3,6 @@ package com.plugin.terraform
 
 import com.dtolabs.rundeck.core.execution.workflow.steps.StepException
 import com.dtolabs.rundeck.plugins.step.PluginStepContext
-import groovy.json.JsonSlurper
 
 class TerraformCommandExecutor {
 
@@ -13,7 +12,7 @@ class TerraformCommandExecutor {
 
     static void executePlan(PluginStepContext context, File workDir, Map<String, String> env,
                             String terraformPath, String variables, String variableFiles) {
-        def args = ["plan", "-detailed-exitcode", "-out=tfplan"]
+        List<String> args = ["plan", "-detailed-exitcode", "-out=tfplan"]
         addVariableArgs(args, variables, variableFiles)
         def result = runCommand(context, workDir, env, terraformPath, args)
 
@@ -32,49 +31,47 @@ class TerraformCommandExecutor {
 
     static void executeApply(PluginStepContext context, File workDir, Map<String, String> env,
                              String terraformPath, String variables, String variableFiles) {
-        def args = ["apply", "-auto-approve"]
+        List<String> args = ["apply", "-auto-approve"]
         addVariableArgs(args, variables, variableFiles)
         runCommand(context, workDir, env, terraformPath, args)
-    }
-
-    static void executeDestroy(PluginStepContext context, File workDir, Map<String, String> env,
-                               String terraformPath, String variables, String variableFiles) {
-        def args = ["destroy", "-auto-approve"]
-        addVariableArgs(args, variables, variableFiles)
-        runCommand(context, workDir, env, terraformPath, args)
-    }
-
-    static void executeOutput(PluginStepContext context, File workDir, Map<String, String> env, String terraformPath) {
-        def result = runCommand(context, workDir, env, terraformPath, ["output", "-json"])
-        context.dataContext.put("terraform", parseOutputJson(result.output))
-    }
-
-    static void executeValidate(PluginStepContext context, File workDir, Map<String, String> env, String terraformPath) {
-        runCommand(context, workDir, env, terraformPath, ["validate"])
     }
 
     private static void addVariableArgs(List<String> args, String variables, String variableFiles) {
         if (variables) {
-            variables.readLines().each { line ->
-                args.add("-var=${line}")
+            variables.readLines().each { String line ->
+                if (line.trim()) {
+                    args.add("-var")
+                    // Don't add any extra quotes - just pass the key=value pair as is
+                    args.add(line.trim())
+                }
             }
         }
         if (variableFiles) {
-            variableFiles.readLines().each { file ->
-                args.add("-var-file=${file}")
+            variableFiles.readLines().each { String file ->
+                if (file.trim()) {
+                    args.add("-var-file=" + file.trim())
+                }
             }
         }
     }
 
-    private static Map<String, Object> parseOutputJson(String jsonOutput) {
-        def slurper = new JsonSlurper()
-        return slurper.parseText(jsonOutput) as Map<String, Object>
-    }
-
     private static ProcessResult runCommand(PluginStepContext context, File workDir,
-                                            Map<String, String> env, String terraformPath, List<String> args) {
-        def cmdList = [terraformPath] + args
-        def process = new ProcessBuilder(cmdList)
+                                            Map<String, String> env, String terraformPath,
+                                            List<String> args) {
+        // Debug logging to see what we're trying to execute
+        context.logger.log(4,"Terraform path: " + terraformPath)
+        context.logger.log(4,"Args: " + args.toString())
+
+        List<String> cmdArgs = new ArrayList<String>()
+        cmdArgs.add(terraformPath.toString())  // Ensure String type
+        args.each { arg ->
+            cmdArgs.add(arg.toString())  // Ensure each arg is converted to String
+        }
+
+        // Debug the final command
+        context.logger.log(4,"Full command: " + cmdArgs.join(" "))
+
+        def process = new ProcessBuilder(cmdArgs)
                 .directory(workDir)
                 .redirectErrorStream(true)
 
@@ -87,7 +84,7 @@ class TerraformCommandExecutor {
 
         reader.eachLine { line ->
             output.append(line).append("\n")
-            context.logger.log(3, line)
+            context.logger.log(4, line)
         }
 
         proc.waitFor()
