@@ -58,18 +58,9 @@ class TerraformCommandExecutor {
     private static ProcessResult runCommand(PluginStepContext context, File workDir,
                                             Map<String, String> env, String terraformPath,
                                             List<String> args) {
-        // Debug logging to see what we're trying to execute
-        context.logger.log(4,"Terraform path: " + terraformPath)
-        context.logger.log(4,"Args: " + args.toString())
-
         List<String> cmdArgs = new ArrayList<String>()
-        cmdArgs.add(terraformPath.toString())  // Ensure String type
-        args.each { arg ->
-            cmdArgs.add(arg.toString())  // Ensure each arg is converted to String
-        }
-
-        // Debug the final command
-        context.logger.log(4,"Full command: " + cmdArgs.join(" "))
+        cmdArgs.add(terraformPath.toString())
+        cmdArgs.addAll(args)
 
         def process = new ProcessBuilder(cmdArgs)
                 .directory(workDir)
@@ -84,7 +75,7 @@ class TerraformCommandExecutor {
 
         reader.eachLine { line ->
             output.append(line).append("\n")
-            context.logger.log(4, line)
+            context.logger.log(2, line)  // Simply log each line as-is
         }
 
         proc.waitFor()
