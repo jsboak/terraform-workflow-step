@@ -1,6 +1,7 @@
 // EnvironmentBuilder.groovy
 package com.plugin.terraform
 
+import com.dtolabs.rundeck.core.common.IRundeckProject
 import com.dtolabs.rundeck.plugins.step.PluginStepContext
 
 class EnvironmentBuilder {
@@ -15,7 +16,7 @@ class EnvironmentBuilder {
         Map<String, String> env = [:] as Map<String, String>
         env.putAll(System.getenv())
 
-        def project = context.getFrameworkProject()
+        IRundeckProject project = context.getExecutionContext().getIFramework().getFrameworkProjectMgr().getFrameworkProject(context.getFrameworkProject())
 
         // Configure cloud provider credentials
         if (plugin.useAws) {

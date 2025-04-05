@@ -98,6 +98,15 @@ class TerraformStepPlugin implements StepPlugin {
     @SelectValues(values = ["TRACE", "DEBUG", "INFO", "WARN", "ERROR"], freeSelect = false)
     String logLevel
 
+//    @PluginProperty(
+//            title = "Clean Terraform Cache",
+//            description = "Remove .terraform directory and state files before init. WARNING: This will remove existing state!",
+//            defaultValue = "false"
+//    )
+//    @RenderingOption(key = StringRenderingConstants.GROUP_NAME, value = "Advanced")
+//    @RenderingOption(key = StringRenderingConstants.GROUPING, value = "Secondary")
+//    Boolean cleanTerraformCache
+
     private final TerraformCommandExecutor commandExecutor
     private final CloudCredentialsManager credentialsManager
     private final EnvironmentBuilder environmentBuilder
