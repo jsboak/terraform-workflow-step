@@ -12,5 +12,6 @@ import com.dtolabs.rundeck.core.execution.workflow.steps.FailureReason
 enum PluginFailureReason implements FailureReason {
     KeyStorageError,
     ResourceInfoError,
-    TerraformError
+    TerraformError,
+    IOFailure
 }
