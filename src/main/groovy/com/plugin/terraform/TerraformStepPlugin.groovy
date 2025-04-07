@@ -55,6 +55,7 @@ class TerraformStepPlugin implements StepPlugin {
     @RenderingOption(key = StringRenderingConstants.DISPLAY_TYPE_KEY, value = "MULTI_LINE")
     String terraformHCL
 
+    //TODO: Infer secrets to be retrieved from Key Storage from properties (eg. where value contains "keys/")
     @PluginProperty(
             title = "Variables",
             description = "Terraform variables in format key=value (one per line)",
