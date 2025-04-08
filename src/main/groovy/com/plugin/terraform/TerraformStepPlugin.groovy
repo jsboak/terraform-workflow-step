@@ -27,20 +27,6 @@ class TerraformStepPlugin implements StepPlugin {
     String terraformCommand
 
     @PluginProperty(
-            title = "Working Directory",
-            description = "Directory containing Terraform configuration files",
-            required = true
-    )
-    String workingDirectory
-
-    @PluginProperty(
-            title = "Create Working Directory",
-            description = "Optionally create the working directory if it doesn't exist. Use the inline Terraform HCL property to use this option.\n Selecting this will create the working directory if it doesn't exist and then use the inline HCL from `Terraform HCL` property. You can optionally pass in the HCL as a variable from a prior step, such as through `\${data.terraform_hcl}`.",
-            defaultValue = "false"
-    )
-    Boolean createWorkingDirectory
-
-    @PluginProperty(
             title = "Terraform Binary Path",
             description = "Path to terraform binary",
             defaultValue = "/usr/bin/terraform"
@@ -48,18 +34,44 @@ class TerraformStepPlugin implements StepPlugin {
     String terraformPath
 
     @PluginProperty(
+            title = "Working Directory",
+            description = "Directory containing Terraform configuration files.",
+            required = true
+    )
+    String workingDirectory
+
+    @PluginProperty(
+            title = "Create and use Temporary Working Directory",
+            description = "Optionally create the working directory if it doesn't exist.\nSelecting this will create a working directory at `/tmp/\${job.execid}` and then use the inline HCL from the **Terraform HCL** property below. You can optionally pass in the HCL as a variable from a prior step, such as through `\${data.terraform_hcl}` if your HCL is retrieved via Git.",
+            defaultValue = "false"
+    )
+    @RenderingOption(key = StringRenderingConstants.GROUP_NAME, value = "Working Directory Options")
+    @RenderingOption(key = StringRenderingConstants.GROUPING, value = "secondary")
+    Boolean tempWorkingDirectory
+
+    @PluginProperty(
+            title = "Delete Temporary Working Directory",
+            description = "Delete the temporary working directory after step execution.",
+            defaultValue = "false"
+    )
+    @RenderingOption(key = StringRenderingConstants.GROUP_NAME, value = "Working Directory Options")
+    @RenderingOption(key = StringRenderingConstants.GROUPING, value = "secondary")
+    Boolean deleteTempWorkingDirectory
+
+    @PluginProperty(
             title = "Terraform HCL",
             description = "Terraform HCL to be used. This will be used if a new working directory is created, but not if a working directory already exists.\n You can optionally pass in the HCL as a variable from a prior step, such as through `\${data.terraform_hcl}`.",
             required = false
     )
-    @RenderingOption(key = StringRenderingConstants.DISPLAY_TYPE_KEY, value = "MULTI_LINE")
+    @RenderingOption(key = StringRenderingConstants.DISPLAY_TYPE_KEY, value = "CODE")
+    @RenderingOption(key = StringRenderingConstants.CODE_SYNTAX_MODE, value = "yaml")
     String terraformHCL
 
-    //TODO: Infer secrets to be retrieved from Key Storage from properties (eg. where value contains "keys/")
     @PluginProperty(
             title = "Variables",
-            description = "Terraform variables in format key=value (one per line)",
-            required = false
+            description = "Terraform variables in format key=value (one per line).\nSecrets can be retrieved from Key Storage by using the format `keys://<path>` or `keys/<path>` - for example `PAGERDUTY_TOKEN=keys/path/to/api_token`. You can optionally pass in the variables as a variable from a prior step, such as through `\${data.terraform_vars}`.",
+            required = false,
+            defaultValue = "PAGERDUTY_TOKEN=keys/path/to/api_token"
     )
     @RenderingOption(key = StringRenderingConstants.DISPLAY_TYPE_KEY, value = "MULTI_LINE")
     String variables
@@ -126,16 +138,7 @@ class TerraformStepPlugin implements StepPlugin {
 
     @Override
     void executeStep(PluginStepContext context, Map<String, Object> configuration) throws StepException {
-        validateWorkingDirectory()
-
-        // First ensure working directory exists or create it
-        File workDir = new File(workingDirectory)
-        if (!workDir.exists()) {
-            if (!workDir.mkdirs()) {
-                throw new StepException("Failed to create working directory: ${workingDirectory}",
-                        PluginFailureReason.IOFailure)
-            }
-        }
+        File workDir = validateWorkingDirectory(context)
 
         // If terraformHCL is provided, create or update main.tf
         if (terraformHCL?.trim()) {
@@ -196,31 +199,34 @@ class TerraformStepPlugin implements StepPlugin {
         }
     }
 
-    private void validateWorkingDirectory() throws StepException {
+    private File validateWorkingDirectory(PluginStepContext context) throws StepException {
         File workDir = new File(workingDirectory)
 
-        if (!workDir.exists()) {
-            if (createWorkingDirectory) {
-                try {
-                    workDir.mkdirs()
-                } catch (Exception e) {
-                    throw new StepException("Failed to create working directory: ${e.message}",
-                            PluginFailureReason.IOFailure)
-                }
-            } else {
-                throw new StepException("Working directory does not exist: ${workingDirectory}",
+        if (tempWorkingDirectory) {
+            try {
+                //Make temporary working directory at /tmp/${job.execid}
+                workDir = new File("/tmp/${context.executionContext.execution.id}/terraform")
+                workDir.mkdirs()
+                context.logger.log(3,"Created temporary working directory at: ${workDir.absolutePath}")
+            } catch (Exception e) {
+                throw new StepException("Failed to create working directory: ${e.message}",
                         PluginFailureReason.IOFailure)
             }
+
+            return workDir
         }
 
-        if (!workDir.isDirectory()) {
+         else if (!workDir.isDirectory()) {
             throw new StepException("Specified path is not a directory: ${workingDirectory}",
                     PluginFailureReason.IOFailure)
         }
 
-        if (!workDir.canRead() || !workDir.canWrite()) {
+        else if (!workDir.canRead() || !workDir.canWrite()) {
             throw new StepException("Insufficient permissions on working directory: ${workingDirectory}",
                     PluginFailureReason.IOFailure)
         }
+
+        context.logger.log(3,"Using working directory: ${workDir.absolutePath}")
+        return workDir
     }
 }

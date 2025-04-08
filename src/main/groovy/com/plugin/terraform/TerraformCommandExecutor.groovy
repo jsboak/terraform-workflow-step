@@ -76,9 +76,17 @@ class TerraformCommandExecutor {
         if (variables) {
             variables.readLines().each { String line ->
                 if (line.trim()) {
-                    args.add("-var")
-                    // Don't add any extra quotes - just pass the key=value pair as is
-                    args.add(line.trim())
+                    String[] parts = line.split('=', 2)
+                    if (parts.length == 2) {
+                        String key = parts[0].trim()
+                        String value = parts[1].trim()
+                        // If the value is a secret reference, skip adding it to the command-line.
+                        if (!(value?.startsWith("keys://") || value.contains("keys/"))) {
+                            args.add("-var")
+                            args.add("${key}=${value}")
+                        }
+                        // Otherwise, do nothing since the secret value is already provided as an environment variable.
+                    }
                 }
             }
         }
@@ -90,6 +98,7 @@ class TerraformCommandExecutor {
             }
         }
     }
+
 
     private static ProcessResult runCommand(PluginStepContext context, File workDir,
                                             Map<String, String> env, String terraformPath,

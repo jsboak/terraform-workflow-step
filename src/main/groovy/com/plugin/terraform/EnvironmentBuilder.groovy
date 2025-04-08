@@ -2,6 +2,7 @@
 package com.plugin.terraform
 
 import com.dtolabs.rundeck.core.common.IRundeckProject
+import com.dtolabs.rundeck.core.execution.workflow.steps.StepException
 import com.dtolabs.rundeck.plugins.step.PluginStepContext
 
 class EnvironmentBuilder {
@@ -32,18 +33,27 @@ class EnvironmentBuilder {
         // Set log level
         env["TF_LOG"] = plugin.logLevel
 
-        // Add terraform variables
+        // Add terraform variables as environment variables
         if (plugin.variables) {
             plugin.variables.readLines().each { String line ->
                 String[] parts = line.split('=', 2)
                 if (parts.length == 2) {
-                    String key = parts[0]
-                    String value = parts[1]
-                    env.put("TF_VAR_" + key, value)
+                    String key = parts[0].trim()
+                    String value = parts[1].trim()
+                    // Check if the variable value is a secret reference
+                    if (value?.startsWith("keys://") || value.contains("keys/")) {
+                        try {
+                            value = Util.getPasswordFromKeyStorage(value, context)
+                        } catch (Exception e) {
+                            throw new StepException("Failed to retrieve secret for variable '${key}': ${e.message}",
+                                    PluginFailureReason.KeyStorageError)
+                        }
+                    }
+//                    env.put("TF_VAR_" + key, value)
+                    env.put(key, value)
                 }
             }
         }
-
         return env
     }
 }
