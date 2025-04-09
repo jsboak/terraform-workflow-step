@@ -13,9 +13,13 @@ class TerraformCommandExecutor {
     }
 
     static void executePlan(PluginStepContext context, File workDir, Map<String, String> env,
-                            String terraformPath, String variables, String variableFiles) {
+                            String terraformPath, String variables, String variableFiles, String additionalParameters) {
         List<String> args = ["plan", "-detailed-exitcode", "-out=tfplan"]
         addVariableArgs(args, variables, variableFiles)
+        if (additionalParameters?.trim()) {
+            // Assuming additionalParameters is a whitespace-separated string of extra arguments
+            args.addAll(additionalParameters.trim().split(/\s+/))
+        }
         def result = runCommand(context, workDir, env, terraformPath, args)
 
         switch (result.exitValue) {
@@ -31,17 +35,58 @@ class TerraformCommandExecutor {
         }
     }
 
+    static void executeWorkspace(PluginStepContext context, File workDir, Map<String, String> env,
+                                 String terraformPath, String workspaceSubcommand, String additionalParameters) {
+        List<String> args = ["workspace"]
+        // Append the subcommand, e.g., "new", "select", or "list"
+        if(workspaceSubcommand?.trim()){
+            args.add(workspaceSubcommand.trim())
+        } else {
+            throw new StepException("No workspace subcommand provided", PluginFailureReason.TerraformError)
+        }
+        if (additionalParameters?.trim()) {
+            // Assuming additionalParameters is a whitespace-separated string of extra arguments
+            args.addAll(additionalParameters.trim().split(/\s+/))
+        }
+        runCommand(context, workDir, env, terraformPath, args)
+    }
+
+    static void executeState(PluginStepContext context, File workDir, Map<String, String> env,
+                             String terraformPath, String stateSubcommand, String additionalParameters) {
+        List<String> args = ["state"]
+        // Append the subcommand, e.g., "list", "show", or others.
+        if(stateSubcommand?.trim()){
+            args.add(stateSubcommand.trim())
+        } else {
+            throw new StepException("No state subcommand provided", PluginFailureReason.TerraformError)
+        }
+        if (additionalParameters?.trim()) {
+            // Assuming additionalParameters is a whitespace-separated string of extra arguments
+            args.addAll(additionalParameters.trim().split(/\s+/))
+        }
+        runCommand(context, workDir, env, terraformPath, args)
+    }
+
+
     static void executeApply(PluginStepContext context, File workDir, Map<String, String> env,
-                             String terraformPath, String variables, String variableFiles) {
+                             String terraformPath, String variables, String variableFiles, String additionalParameters) {
         List<String> args = ["apply", "-auto-approve"]
         addVariableArgs(args, variables, variableFiles)
+        if (additionalParameters?.trim()) {
+            // Assuming additionalParameters is a whitespace-separated string of extra arguments
+            args.addAll(additionalParameters.trim().split(/\s+/))
+        }
         runCommand(context, workDir, env, terraformPath, args)
     }
 
     static void executeDestroy(PluginStepContext context, File workDir, Map<String, String> env,
-                               String terraformPath, String variables, String variableFiles) {
+                               String terraformPath, String variables, String variableFiles, String additionalParameters) {
         def args = ["destroy", "-auto-approve"]
         addVariableArgs(args, variables, variableFiles)
+        if (additionalParameters?.trim()) {
+            // Assuming additionalParameters is a whitespace-separated string of extra arguments
+            args.addAll(additionalParameters.trim().split(/\s+/))
+        }
         runCommand(context, workDir, env, terraformPath, args)
     }
 
@@ -70,6 +115,19 @@ class TerraformCommandExecutor {
 
     static void executeValidate(PluginStepContext context, File workDir, Map<String, String> env, String terraformPath) {
         runCommand(context, workDir, env, terraformPath, ["validate"])
+    }
+
+    static void executeApplyWithPlan(PluginStepContext context, File workDir, Map<String, String> env,
+                                     String terraformPath, String variables, String variableFiles, String additionalParameters) {
+        // Construct command: terraform apply -auto-approve tfplan
+        List<String> args = ["apply", "-auto-approve", "tfplan"]
+        // Optionally add any variable arguments if needed
+        addVariableArgs(args, variables, variableFiles)
+        if (additionalParameters?.trim()) {
+            // Assuming additionalParameters is a whitespace-separated string of extra arguments
+            args.addAll(additionalParameters.trim().split(/\s+/))
+        }
+        runCommand(context, workDir, env, terraformPath, args)
     }
 
     private static void addVariableArgs(List<String> args, String variables, String variableFiles) {
