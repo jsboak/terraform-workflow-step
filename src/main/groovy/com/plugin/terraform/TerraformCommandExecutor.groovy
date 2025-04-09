@@ -16,10 +16,8 @@ class TerraformCommandExecutor {
                             String terraformPath, String variables, String variableFiles, String additionalParameters) {
         List<String> args = ["plan", "-detailed-exitcode", "-out=tfplan"]
         addVariableArgs(args, variables, variableFiles)
-        if (additionalParameters?.trim()) {
-            // Assuming additionalParameters is a whitespace-separated string of extra arguments
-            args.addAll(additionalParameters.trim().split(/\s+/))
-        }
+        args.addAll(parseAdditionalParameters(additionalParameters))
+
         def result = runCommand(context, workDir, env, terraformPath, args)
 
         switch (result.exitValue) {
@@ -44,15 +42,13 @@ class TerraformCommandExecutor {
         } else {
             throw new StepException("No workspace subcommand provided", PluginFailureReason.TerraformError)
         }
-        if (additionalParameters?.trim()) {
-            // Assuming additionalParameters is a whitespace-separated string of extra arguments
-            args.addAll(additionalParameters.trim().split(/\s+/))
-        }
+        args.addAll(parseAdditionalParameters(additionalParameters))
+
         def result = runCommand(context, workDir, env, terraformPath, args)
         if (result.exitValue != 0) {
-            throw new StepException("Terraform workspace command failed with exit code ${result.exitValue}. Output: ${result.output}",
-                    PluginFailureReason.TerraformError)
+            throw new StepException("Terraform apply failed for command [${terraformPath} ${args.join(' ')}] with exit code ${result.exitValue}. Output: ${result.output}", PluginFailureReason.TerraformError)
         }
+
     }
 
     static void executeState(PluginStepContext context, File workDir, Map<String, String> env,
@@ -64,15 +60,13 @@ class TerraformCommandExecutor {
         } else {
             throw new StepException("No state subcommand provided", PluginFailureReason.TerraformError)
         }
-        if (additionalParameters?.trim()) {
-            // Assuming additionalParameters is a whitespace-separated string of extra arguments
-            args.addAll(additionalParameters.trim().split(/\s+/))
-        }
+        args.addAll(parseAdditionalParameters(additionalParameters))
+
         def result = runCommand(context, workDir, env, terraformPath, args)
         if (result.exitValue != 0) {
-            throw new StepException("Terraform state command failed with exit code ${result.exitValue}. Output: ${result.output}",
-                    PluginFailureReason.TerraformError)
+            throw new StepException("Terraform apply failed for command [${terraformPath} ${args.join(' ')}] with exit code ${result.exitValue}. Output: ${result.output}", PluginFailureReason.TerraformError)
         }
+
     }
 
 
@@ -80,30 +74,26 @@ class TerraformCommandExecutor {
                              String terraformPath, String variables, String variableFiles, String additionalParameters) {
         List<String> args = ["apply", "-auto-approve"]
         addVariableArgs(args, variables, variableFiles)
-        if (additionalParameters?.trim()) {
-            // Assuming additionalParameters is a whitespace-separated string of extra arguments
-            args.addAll(additionalParameters.trim().split(/\s+/))
-        }
+        args.addAll(parseAdditionalParameters(additionalParameters))
+
         def result = runCommand(context, workDir, env, terraformPath, args)
         if (result.exitValue != 0) {
-            throw new StepException("Terraform apply failed with exit code ${result.exitValue}. Output: ${result.output}",
-                    PluginFailureReason.TerraformError)
+            throw new StepException("Terraform apply failed for command [${terraformPath} ${args.join(' ')}] with exit code ${result.exitValue}. Output: ${result.output}", PluginFailureReason.TerraformError)
         }
+
     }
 
     static void executeDestroy(PluginStepContext context, File workDir, Map<String, String> env,
                                String terraformPath, String variables, String variableFiles, String additionalParameters) {
         def args = ["destroy", "-auto-approve"]
         addVariableArgs(args, variables, variableFiles)
-        if (additionalParameters?.trim()) {
-            // Assuming additionalParameters is a whitespace-separated string of extra arguments
-            args.addAll(additionalParameters.trim().split(/\s+/))
-        }
+        args.addAll(parseAdditionalParameters(additionalParameters))
+
         def result = runCommand(context, workDir, env, terraformPath, args)
         if (result.exitValue != 0) {
-            throw new StepException("Terraform destroy failed with exit code ${result.exitValue}. Output: ${result.output}",
-                    PluginFailureReason.TerraformError)
+            throw new StepException("Terraform apply failed for command [${terraformPath} ${args.join(' ')}] with exit code ${result.exitValue}. Output: ${result.output}", PluginFailureReason.TerraformError)
         }
+
     }
 
     static void executeOutput(PluginStepContext context, File workDir, Map<String, String> env,
@@ -119,8 +109,7 @@ class TerraformCommandExecutor {
                 }
             }
         } else {
-            throw new StepException("Terraform output command failed",
-                    PluginFailureReason.TerraformError)
+                throw new StepException("Terraform apply failed for command [${terraformPath} ${args.join(' ')}] with exit code ${result.exitValue}. Output: ${result.output}", PluginFailureReason.TerraformError)
         }
     }
 
@@ -139,32 +128,33 @@ class TerraformCommandExecutor {
         List<String> args = ["apply", "-auto-approve", "tfplan"]
         // Optionally add any variable arguments if needed
         addVariableArgs(args, variables, variableFiles)
-        if (additionalParameters?.trim()) {
-            // Assuming additionalParameters is a whitespace-separated string of extra arguments
-            args.addAll(additionalParameters.trim().split(/\s+/))
-        }
+        args.addAll(parseAdditionalParameters(additionalParameters))
+
         def result = runCommand(context, workDir, env, terraformPath, args)
         if (result.exitValue != 0) {
-            throw new StepException("Terraform apply with plan failed with exit code ${result.exitValue}. Output: ${result.output}",
-                    PluginFailureReason.TerraformError)
+            throw new StepException("Terraform apply failed for command [${terraformPath} ${args.join(' ')}] with exit code ${result.exitValue}. Output: ${result.output}", PluginFailureReason.TerraformError)
         }
+
     }
+
+    private static List<String> parseAdditionalParameters(String additionalParameters) {
+        return additionalParameters?.trim() ? additionalParameters.trim().split(/\s+/) as List : []
+    }
+
 
     private static void addVariableArgs(List<String> args, String variables, String variableFiles) {
         if (variables) {
-            variables.readLines().each { String line ->
-                if (line.trim()) {
-                    String[] parts = line.split('=', 2)
-                    if (parts.length == 2) {
-                        String key = parts[0].trim()
-                        String value = parts[1].trim()
-                        // If the value is a secret reference, skip adding it to the command-line.
-                        if (!(value?.startsWith("keys://") || value.contains("keys/"))) {
-                            args.add("-var")
-                            args.add("${key}=${value}")
-                        }
-                        // Otherwise, do nothing since the secret value is already provided as an environment variable.
+            variables?.readLines()?.each { String line ->
+                def parts = line.split('=', 2)*.trim()
+                if (parts.size() == 2 && parts[1]) {
+                    String key = parts[0].trim()
+                    String value = parts[1].trim()
+                    // If the value is a secret reference, skip adding it to the command-line.
+                    if (!(value?.startsWith("keys://") || value.contains("keys/"))) {
+                        args.add("-var")
+                        args.add("${key}=${value}")
                     }
+                    // Otherwise, do nothing since the secret value is already provided as an environment variable.
                 }
             }
         }
@@ -177,30 +167,25 @@ class TerraformCommandExecutor {
         }
     }
 
-
     private static ProcessResult runCommand(PluginStepContext context, File workDir,
                                             Map<String, String> env, String terraformPath,
                                             List<String> args) {
-        List<String> cmdArgs = new ArrayList<String>()
-        cmdArgs.add(terraformPath.toString())
-        cmdArgs.addAll(args)
+        List<String> cmdArgs = [terraformPath] + args
 
-        def process = new ProcessBuilder(cmdArgs)
+        ProcessBuilder process = new ProcessBuilder(cmdArgs)
                 .directory(workDir)
                 .redirectErrorStream(true)
-
         process.environment().clear()
         process.environment().putAll(env)
 
-        def proc = process.start()
-        def output = new StringBuilder()
-        def reader = new BufferedReader(new InputStreamReader(proc.inputStream))
-
-        reader.eachLine { line ->
-            output.append(line).append("\n")
-            context.logger.log(2, line)  // Simply log each line as-is
+        Process proc = process.start()
+        StringBuilder output = new StringBuilder()
+        proc.inputStream.withReader { reader ->
+            reader.eachLine { line ->
+                output.append(line).append("\n")
+                context.logger.log(2, line)
+            }
         }
-
         proc.waitFor()
         return new ProcessResult(proc.exitValue(), output.toString())
     }

@@ -206,9 +206,8 @@ class TerraformStepPlugin implements StepPlugin {
                 }
             } else {
                 // Verify existing Terraform files if no HCL provided
-                if (!new File(workDir, "main.tf").exists() && !new File(workDir, "*.tf").exists()) {
-                    throw new StepException("No Terraform configuration found in ${workingDirectory} and no configuration provided",
-                            PluginFailureReason.IOFailure)
+                if (!new File(workDir, "main.tf").exists() && !workDir.listFiles({ file -> file.name.endsWith('.tf') } as FilenameFilter)) {
+                    throw new StepException("No Terraform configuration found in ${workingDirectory} and no configuration provided", PluginFailureReason.IOFailure)
                 }
             }
 
