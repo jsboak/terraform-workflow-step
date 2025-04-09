@@ -48,7 +48,11 @@ class TerraformCommandExecutor {
             // Assuming additionalParameters is a whitespace-separated string of extra arguments
             args.addAll(additionalParameters.trim().split(/\s+/))
         }
-        runCommand(context, workDir, env, terraformPath, args)
+        def result = runCommand(context, workDir, env, terraformPath, args)
+        if (result.exitValue != 0) {
+            throw new StepException("Terraform workspace command failed with exit code ${result.exitValue}. Output: ${result.output}",
+                    PluginFailureReason.TerraformError)
+        }
     }
 
     static void executeState(PluginStepContext context, File workDir, Map<String, String> env,
@@ -64,7 +68,11 @@ class TerraformCommandExecutor {
             // Assuming additionalParameters is a whitespace-separated string of extra arguments
             args.addAll(additionalParameters.trim().split(/\s+/))
         }
-        runCommand(context, workDir, env, terraformPath, args)
+        def result = runCommand(context, workDir, env, terraformPath, args)
+        if (result.exitValue != 0) {
+            throw new StepException("Terraform state command failed with exit code ${result.exitValue}. Output: ${result.output}",
+                    PluginFailureReason.TerraformError)
+        }
     }
 
 
@@ -76,7 +84,11 @@ class TerraformCommandExecutor {
             // Assuming additionalParameters is a whitespace-separated string of extra arguments
             args.addAll(additionalParameters.trim().split(/\s+/))
         }
-        runCommand(context, workDir, env, terraformPath, args)
+        def result = runCommand(context, workDir, env, terraformPath, args)
+        if (result.exitValue != 0) {
+            throw new StepException("Terraform apply failed with exit code ${result.exitValue}. Output: ${result.output}",
+                    PluginFailureReason.TerraformError)
+        }
     }
 
     static void executeDestroy(PluginStepContext context, File workDir, Map<String, String> env,
@@ -87,7 +99,11 @@ class TerraformCommandExecutor {
             // Assuming additionalParameters is a whitespace-separated string of extra arguments
             args.addAll(additionalParameters.trim().split(/\s+/))
         }
-        runCommand(context, workDir, env, terraformPath, args)
+        def result = runCommand(context, workDir, env, terraformPath, args)
+        if (result.exitValue != 0) {
+            throw new StepException("Terraform destroy failed with exit code ${result.exitValue}. Output: ${result.output}",
+                    PluginFailureReason.TerraformError)
+        }
     }
 
     static void executeOutput(PluginStepContext context, File workDir, Map<String, String> env,
@@ -127,7 +143,11 @@ class TerraformCommandExecutor {
             // Assuming additionalParameters is a whitespace-separated string of extra arguments
             args.addAll(additionalParameters.trim().split(/\s+/))
         }
-        runCommand(context, workDir, env, terraformPath, args)
+        def result = runCommand(context, workDir, env, terraformPath, args)
+        if (result.exitValue != 0) {
+            throw new StepException("Terraform apply with plan failed with exit code ${result.exitValue}. Output: ${result.output}",
+                    PluginFailureReason.TerraformError)
+        }
     }
 
     private static void addVariableArgs(List<String> args, String variables, String variableFiles) {

@@ -81,8 +81,7 @@ class TerraformStepPlugin implements StepPlugin {
 
     @PluginProperty(
             title =  "Workspace Subcommand",
-            description = "Terraform workspace subcommand to execute.\n This is only used if the Terraform command is set to `workspace`.",
-            defaultValue = "list"
+            description = "Terraform workspace subcommand to execute.\n This is only used if the Terraform command is set to `workspace`."
     )
     @SelectValues(values = ["list", "select", "new", "delete", "show"], freeSelect = false)
     @RenderingOption(key = StringRenderingConstants.GROUP_NAME, value = "Command Options")
@@ -90,8 +89,7 @@ class TerraformStepPlugin implements StepPlugin {
 
     @PluginProperty(
             title = "State Subcommand",
-            description = "Terraform state subcommand to execute.\n This is only used if the Terraform command is set to `state`.",
-            defaultValue = "list"
+            description = "Terraform state subcommand to execute.\n This is only used if the Terraform command is set to `state`."
     )
     @SelectValues(values = ["list", "mv", "rm", "show", "pull", "push", "replace-provider",
             "get", "import"], freeSelect = false)
@@ -281,7 +279,7 @@ class TerraformStepPlugin implements StepPlugin {
             // Clean up temporary working directory if applicable.
             if (tempWorkingDirectory && deleteTempWorkingDirectory && workDir != null) {
                 try {
-                    workDir.deleteDir()  // Groovy's convenient method for recursive deletion
+                    workDir.deleteDir()  // Recursively delete the temporary working directory
                     context.logger.log(3, "Temporary working directory deleted: ${workDir.absolutePath}")
                 } catch(Exception cleanupEx) {
                     context.logger.log(3, "Failed to delete temporary working directory: ${cleanupEx.message}")
