@@ -49,8 +49,7 @@ class EnvironmentBuilder {
                                     PluginFailureReason.KeyStorageError)
                         }
                     }
-//                    env.put("TF_VAR_" + key, value)
-                    env.put(key, value)
+                    env.put("TF_VAR_" + key, value)
                 }
             }
         }
