@@ -1,4 +1,3 @@
-// TerraformStepPlugin.groovy
 package com.plugin.terraform
 
 import com.dtolabs.rundeck.core.execution.workflow.steps.StepException

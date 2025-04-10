@@ -48,9 +48,6 @@ abstract class RunnerProxyProperties implements NodeStepPlugin, ProxyRunnerPlugi
         if(gcpSecretProject) {
             list.add(gcpSecretProject)
         }
-        if(secretPath) {
-            list.add(secretPath)
-        }
         if(awsSecretProject) {
             list.add(awsSecretProject)
         }

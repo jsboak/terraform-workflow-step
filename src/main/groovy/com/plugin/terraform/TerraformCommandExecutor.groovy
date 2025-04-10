@@ -25,7 +25,7 @@ class TerraformCommandExecutor {
         addVariableArgs(args, variables, variableFiles)
         args.addAll(parseAdditionalParameters(additionalParameters))
 
-        def result = commandRunner.run(context, workDir, env, terraformPath, args) //runCommand(context, workDir, env, terraformPath, args)
+        def result = commandRunner.run(context, workDir, env, terraformPath, args)
 
         switch (result.exitValue) {
             case 0:
@@ -51,7 +51,7 @@ class TerraformCommandExecutor {
         }
         args.addAll(parseAdditionalParameters(additionalParameters))
 
-        def result = commandRunner.run(context, workDir, env, terraformPath, args) // runCommand(context, workDir, env, terraformPath, args)
+        def result = commandRunner.run(context, workDir, env, terraformPath, args)
         if (result.exitValue != 0) {
             throw new StepException("Terraform apply failed for command [${terraformPath} ${args.join(' ')}] with exit code ${result.exitValue}. Output: ${result.output}", PluginFailureReason.TerraformError)
         }
@@ -69,7 +69,7 @@ class TerraformCommandExecutor {
         }
         args.addAll(parseAdditionalParameters(additionalParameters))
 
-        def result = commandRunner.run(context, workDir, env, terraformPath, args) //runCommand(context, workDir, env, terraformPath, args)
+        def result = commandRunner.run(context, workDir, env, terraformPath, args)
         if (result.exitValue != 0) {
             throw new StepException("Terraform apply failed for command [${terraformPath} ${args.join(' ')}] with exit code ${result.exitValue}. Output: ${result.output}", PluginFailureReason.TerraformError)
         }
@@ -83,7 +83,7 @@ class TerraformCommandExecutor {
         addVariableArgs(args, variables, variableFiles)
         args.addAll(parseAdditionalParameters(additionalParameters))
 
-        def result = commandRunner.run(context, workDir, env, terraformPath, args) //runCommand(context, workDir, env, terraformPath, args)
+        def result = commandRunner.run(context, workDir, env, terraformPath, args)
         if (result.exitValue != 0) {
             throw new StepException("Terraform apply failed for command [${terraformPath} ${args.join(' ')}] with exit code ${result.exitValue}. Output: ${result.output}", PluginFailureReason.TerraformError)
         }
@@ -96,7 +96,7 @@ class TerraformCommandExecutor {
         addVariableArgs(args, variables, variableFiles)
         args.addAll(parseAdditionalParameters(additionalParameters))
 
-        def result = commandRunner.run(context, workDir, env, terraformPath, args) //runCommand(context, workDir, env, terraformPath, args)
+        def result = commandRunner.run(context, workDir, env, terraformPath, args)
         if (result.exitValue != 0) {
             throw new StepException("Terraform apply failed for command [${terraformPath} ${args.join(' ')}] with exit code ${result.exitValue}. Output: ${result.output}", PluginFailureReason.TerraformError)
         }
@@ -106,7 +106,7 @@ class TerraformCommandExecutor {
     void executeOutput(PluginStepContext context, File workDir, Map<String, String> env,
                               String terraformPath, Map<String, Map<String, Object>> outputs) {
         List<String> args = ["output", "-json"]
-        def result = commandRunner.run(context, workDir, env, terraformPath, args) //runCommand(context, workDir, env, terraformPath, args)
+        def result = commandRunner.run(context, workDir, env, terraformPath, args)
 
         if (result.exitValue == 0) {
             Map<String, Object> outputMap = parseOutputJson(result.output)
@@ -126,7 +126,7 @@ class TerraformCommandExecutor {
     }
 
     void executeValidate(PluginStepContext context, File workDir, Map<String, String> env, String terraformPath) {
-        commandRunner.run(context, workDir, env, terraformPath, ["validate"]) //runCommand(context, workDir, env, terraformPath, ["validate"])
+        commandRunner.run(context, workDir, env, terraformPath, ["validate"])
     }
 
     void executeApplyWithPlan(PluginStepContext context, File workDir, Map<String, String> env,
@@ -137,7 +137,7 @@ class TerraformCommandExecutor {
         addVariableArgs(args, variables, variableFiles)
         args.addAll(parseAdditionalParameters(additionalParameters))
 
-        def result = commandRunner.run(context, workDir, env, terraformPath, args) //runCommand(context, workDir, env, terraformPath, args)
+        def result = commandRunner.run(context, workDir, env, terraformPath, args)
         if (result.exitValue != 0) {
             throw new StepException("Terraform apply failed for command [${terraformPath} ${args.join(' ')}] with exit code ${result.exitValue}. Output: ${result.output}", PluginFailureReason.TerraformError)
         }

@@ -1,4 +1,3 @@
-// CloudCredentialsManager.groovy
 package com.plugin.terraform
 
 import com.dtolabs.rundeck.core.common.IRundeckProject

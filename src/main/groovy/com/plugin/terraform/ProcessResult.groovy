@@ -1,4 +1,3 @@
-// ProcessResult.groovy
 package com.plugin.terraform
 
 class ProcessResult {

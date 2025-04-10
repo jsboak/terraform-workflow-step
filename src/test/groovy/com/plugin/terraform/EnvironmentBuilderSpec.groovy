@@ -1,4 +1,3 @@
-// File: EnvironmentBuilderSpec.groovy
 package com.plugin.terraform
 
 import com.dtolabs.rundeck.core.common.IFramework
@@ -16,11 +15,6 @@ import com.dtolabs.rundeck.core.storage.ResourceMeta
 
 class EnvironmentBuilderSpec extends Specification {
 
-    /**
-     * Helper method modeled after MongodbWorkflowStepSpec to create a minimal PluginStepContext.
-     * In this context we only stub getExecutionContext() and its StorageTree.
-     * Note that we intentionally do NOT stub getIFramework() because we are not enabling cloud credentials.
-     */
 
     IRundeckProject iRundeckProject
 
