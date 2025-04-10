@@ -73,10 +73,9 @@ Sets the `TF_LOG` environment variable to control Terraform’s verbosity (`TRAC
 ---
 
 ## Example Usage
-
-:::tip
-**Note**: The plugin is designed to be flexible. You can use it in various ways depending on your needs. Here are a few examples:
-:::
+      
+> [!TIP]
+> There is an example job in the `examples` directory of this repository. You can import it into Rundeck to see how the plugin works in practice.
 
 ### A. Two-Step “Plan → Apply”
 1. **Step 1**: Add plugin step, set **Terraform Command** to `plan`.
