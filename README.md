@@ -14,10 +14,8 @@ You can use this plugin to orchestrate multi-step Infrastructure-as-Code deploym
 5. **Cloud provider credential support** (AWS, Azure, GCP) reads credentials from a project or framework-level plugin group.                                                                                                                                                                                           
 6. **Optional temporary working directory** creation at runtime (and cleanup) for ephemeral usage.                                                                                                                                                                                                                     
 7. **Logging level** control using Terraform’s `TF_LOG`.                                                                                                                                                                                                                                                               
-
-![Screenshot 2025-04-04 at 12 53 25 PM](https://github.com/user-attachments/assets/9c85dcce-33ea-408b-951c-e06cc81aa336)                                        
-                                                                                                                                                                 
-                                                                                                                                                                 
+![Screenshot 2025-04-10 at 2 08 31 PM](https://github.com/user-attachments/assets/a4177945-a4c7-461a-be97-26c88072eb1f)
+                                                                                                                            
 ## Using the Plugin 
 
 ### Prerequisites                                                                                                                                                                                                                                                                                                                                       
@@ -47,6 +45,8 @@ Path to the folder containing your `.tf` files, or where you want new `.tf` file
 
 ### 4. Terraform HCL
 Inline Terraform configuration. If you enable the temporary working directory, this is written to a file named `main.tf`. If the directory already exists and contains `.tf` files, this property can be left empty.
+
+![Screenshot 2025-04-10 at 2 07 29 PM](https://github.com/user-attachments/assets/fe423812-3c89-4d93-ac33-76ab47921b02)
 
 ### 5. Variables
 Terraform variable definitions in the format `KEY=VALUE` (one per line).  
