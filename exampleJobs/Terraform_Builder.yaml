@@ -1,0 +1,125 @@
+- defaultTab: nodes
+  description: ''
+  executionEnabled: true
+  id: f8cf566d-36a5-4688-bbec-f58927d8881a
+  loglevel: INFO
+  name: Terraform Builder
+  nodeFilterEditable: false
+  plugins:
+    ExecutionLifecycle: {}
+  runnerSelector:
+    runnerFilterMode: LOCAL
+    runnerFilterType: LOCAL_RUNNER
+  scheduleEnabled: true
+  schedules: []
+  sequence:
+    commands:
+    - configuration:
+        autoInit: 'true'
+        deleteTempWorkingDirectory: 'false'
+        logLevel: INFO
+        planOnly: 'false'
+        tempWorkingDirectory: 'false'
+        terraformCommand: plan
+        terraformHCL: |-
+          terraform {
+            required_providers {
+              pagerduty = {
+                source  = "PagerDuty/pagerduty"
+                version = "~> 3.0"
+              }
+            }
+          }
+
+          variable "pagerduty_token" {}
+
+          provider "pagerduty" {
+            token = var.pagerduty_token
+          }
+
+          resource "pagerduty_escalation_policy" "test" {
+            name      = "New Escalation Policy2"
+            num_loops = 1
+
+            rule {
+              escalation_delay_in_minutes = 30
+
+              target {
+                type = "user_reference"
+                id   = "PXAH0OT" # <-- Put a valid PagerDuty User ID here
+              }
+            }
+          }
+
+          # Create a simple service
+          resource "pagerduty_service" "test" {
+            name                    = "New Test Service 2"
+            escalation_policy       = pagerduty_escalation_policy.test.id
+            auto_resolve_timeout    = 14400
+            acknowledgement_timeout = 600
+          }
+        terraformPath: /usr/bin/terraform
+        useAws: 'false'
+        useAzure: 'false'
+        useExistingPlanFile: 'false'
+        useGcp: 'false'
+        variables: pagerduty_token=keys/pdt-rundeckjake
+        workingDirectory: /home/ubuntu/terraform/plans
+      nodeStep: false
+      type: terraform-step
+    - configuration:
+        autoInit: 'true'
+        deleteTempWorkingDirectory: 'false'
+        logLevel: INFO
+        planOnly: 'false'
+        tempWorkingDirectory: 'false'
+        terraformCommand: apply
+        terraformHCL: |-
+          terraform {
+            required_providers {
+              pagerduty = {
+                source  = "PagerDuty/pagerduty"
+                version = "~> 3.0"
+              }
+            }
+          }
+
+          variable "pagerduty_token" {}
+
+          provider "pagerduty" {
+            token = var.pagerduty_token
+          }
+
+          resource "pagerduty_escalation_policy" "test" {
+            name      = "New Escalation Policy2"
+            num_loops = 1
+
+            rule {
+              escalation_delay_in_minutes = 30
+
+              target {
+                type = "user_reference"
+                id   = "PXAH0OT" # <-- Put a valid PagerDuty User ID here
+              }
+            }
+          }
+
+          # Create a simple service
+          resource "pagerduty_service" "test" {
+            name                    = "New Test Service 2"
+            escalation_policy       = pagerduty_escalation_policy.test.id
+            auto_resolve_timeout    = 14400
+            acknowledgement_timeout = 600
+          }
+        terraformPath: /usr/bin/terraform
+        useAws: 'false'
+        useAzure: 'false'
+        useExistingPlanFile: 'false'
+        useGcp: 'false'
+        variables: pagerduty_token=keys/pdt-rundeckjake
+        workingDirectory: /home/ubuntu/terraform/plans
+      nodeStep: false
+      type: terraform-step
+    keepgoing: false
+    strategy: node-first
+  uuid: f8cf566d-36a5-4688-bbec-f58927d8881a

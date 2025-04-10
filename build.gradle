@@ -30,15 +30,21 @@ configurations{
 }
 
 dependencies {
-    implementation 'org.rundeck:rundeck-core:5.0.2-20240212'
+    implementation 'org.rundeck:rundeck-core:5.10.0-20250312'
     implementation 'org.codehaus.groovy:groovy-all:3.0.9'
 
     //use pluginLibs to add dependencies, example:
     //pluginLibs group: 'com.google.code.gson', name: 'gson', version: '2.8.2'
 
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13.1'
     testImplementation "org.codehaus.groovy:groovy-all:3.0.9"
     testImplementation "org.spockframework:spock-core:2.2-groovy-3.0"
+//    testImplementation("org.mockito:mockito-inline:2.7.21")
+
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
 }
 
 // task to copy plugin libs to output/lib dir

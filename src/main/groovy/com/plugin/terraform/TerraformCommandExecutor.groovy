@@ -1,24 +1,31 @@
-// TerraformCommandExecutor.groovy
 package com.plugin.terraform
 
 import com.dtolabs.rundeck.core.execution.workflow.steps.StepException
 import com.dtolabs.rundeck.plugins.step.PluginStepContext
 import groovy.json.JsonSlurper
-import org.apache.commons.collections.map.LazyMap
 
 class TerraformCommandExecutor {
 
-    static void executeInit(PluginStepContext context, File workDir, Map<String, String> env, String terraformPath) {
-        runCommand(context, workDir, env, terraformPath, ["init"])
+    private final CommandRunner commandRunner
+    TerraformCommandExecutor() {
+        this(new DefaultCommandRunner())
     }
 
-    static void executePlan(PluginStepContext context, File workDir, Map<String, String> env,
+    TerraformCommandExecutor(CommandRunner commandRunner) {
+        this.commandRunner = commandRunner
+    }
+
+    void executeInit(PluginStepContext context, File workDir, Map<String, String> env, String terraformPath) {
+        commandRunner.run(context, workDir, env, terraformPath, ["init"])
+    }
+
+    void executePlan(PluginStepContext context, File workDir, Map<String, String> env,
                             String terraformPath, String variables, String variableFiles, String additionalParameters) {
         List<String> args = ["plan", "-detailed-exitcode", "-out=tfplan"]
         addVariableArgs(args, variables, variableFiles)
         args.addAll(parseAdditionalParameters(additionalParameters))
 
-        def result = runCommand(context, workDir, env, terraformPath, args)
+        def result = commandRunner.run(context, workDir, env, terraformPath, args) //runCommand(context, workDir, env, terraformPath, args)
 
         switch (result.exitValue) {
             case 0:
@@ -33,7 +40,7 @@ class TerraformCommandExecutor {
         }
     }
 
-    static void executeWorkspace(PluginStepContext context, File workDir, Map<String, String> env,
+    void executeWorkspace(PluginStepContext context, File workDir, Map<String, String> env,
                                  String terraformPath, String workspaceSubcommand, String additionalParameters) {
         List<String> args = ["workspace"]
         // Append the subcommand, e.g., "new", "select", or "list"
@@ -44,14 +51,14 @@ class TerraformCommandExecutor {
         }
         args.addAll(parseAdditionalParameters(additionalParameters))
 
-        def result = runCommand(context, workDir, env, terraformPath, args)
+        def result = commandRunner.run(context, workDir, env, terraformPath, args) // runCommand(context, workDir, env, terraformPath, args)
         if (result.exitValue != 0) {
             throw new StepException("Terraform apply failed for command [${terraformPath} ${args.join(' ')}] with exit code ${result.exitValue}. Output: ${result.output}", PluginFailureReason.TerraformError)
         }
 
     }
 
-    static void executeState(PluginStepContext context, File workDir, Map<String, String> env,
+    void executeState(PluginStepContext context, File workDir, Map<String, String> env,
                              String terraformPath, String stateSubcommand, String additionalParameters) {
         List<String> args = ["state"]
         // Append the subcommand, e.g., "list", "show", or others.
@@ -62,7 +69,7 @@ class TerraformCommandExecutor {
         }
         args.addAll(parseAdditionalParameters(additionalParameters))
 
-        def result = runCommand(context, workDir, env, terraformPath, args)
+        def result = commandRunner.run(context, workDir, env, terraformPath, args) //runCommand(context, workDir, env, terraformPath, args)
         if (result.exitValue != 0) {
             throw new StepException("Terraform apply failed for command [${terraformPath} ${args.join(' ')}] with exit code ${result.exitValue}. Output: ${result.output}", PluginFailureReason.TerraformError)
         }
@@ -70,36 +77,36 @@ class TerraformCommandExecutor {
     }
 
 
-    static void executeApply(PluginStepContext context, File workDir, Map<String, String> env,
+    void executeApply(PluginStepContext context, File workDir, Map<String, String> env,
                              String terraformPath, String variables, String variableFiles, String additionalParameters) {
         List<String> args = ["apply", "-auto-approve"]
         addVariableArgs(args, variables, variableFiles)
         args.addAll(parseAdditionalParameters(additionalParameters))
 
-        def result = runCommand(context, workDir, env, terraformPath, args)
+        def result = commandRunner.run(context, workDir, env, terraformPath, args) //runCommand(context, workDir, env, terraformPath, args)
         if (result.exitValue != 0) {
             throw new StepException("Terraform apply failed for command [${terraformPath} ${args.join(' ')}] with exit code ${result.exitValue}. Output: ${result.output}", PluginFailureReason.TerraformError)
         }
 
     }
 
-    static void executeDestroy(PluginStepContext context, File workDir, Map<String, String> env,
+    void executeDestroy(PluginStepContext context, File workDir, Map<String, String> env,
                                String terraformPath, String variables, String variableFiles, String additionalParameters) {
         def args = ["destroy", "-auto-approve"]
         addVariableArgs(args, variables, variableFiles)
         args.addAll(parseAdditionalParameters(additionalParameters))
 
-        def result = runCommand(context, workDir, env, terraformPath, args)
+        def result = commandRunner.run(context, workDir, env, terraformPath, args) //runCommand(context, workDir, env, terraformPath, args)
         if (result.exitValue != 0) {
             throw new StepException("Terraform apply failed for command [${terraformPath} ${args.join(' ')}] with exit code ${result.exitValue}. Output: ${result.output}", PluginFailureReason.TerraformError)
         }
 
     }
 
-    static void executeOutput(PluginStepContext context, File workDir, Map<String, String> env,
+    void executeOutput(PluginStepContext context, File workDir, Map<String, String> env,
                               String terraformPath, Map<String, Map<String, Object>> outputs) {
         List<String> args = ["output", "-json"]
-        def result = runCommand(context, workDir, env, terraformPath, args)
+        def result = commandRunner.run(context, workDir, env, terraformPath, args) //runCommand(context, workDir, env, terraformPath, args)
 
         if (result.exitValue == 0) {
             Map<String, Object> outputMap = parseOutputJson(result.output)
@@ -115,14 +122,14 @@ class TerraformCommandExecutor {
 
     private static Map<String, Object> parseOutputJson(String jsonOutput) {
         JsonSlurper slurper = new JsonSlurper()
-        return slurper.parseText(jsonOutput) as LazyMap
+        return slurper.parseText(jsonOutput) as Map<String, Object>
     }
 
-    static void executeValidate(PluginStepContext context, File workDir, Map<String, String> env, String terraformPath) {
-        runCommand(context, workDir, env, terraformPath, ["validate"])
+    void executeValidate(PluginStepContext context, File workDir, Map<String, String> env, String terraformPath) {
+        commandRunner.run(context, workDir, env, terraformPath, ["validate"]) //runCommand(context, workDir, env, terraformPath, ["validate"])
     }
 
-    static void executeApplyWithPlan(PluginStepContext context, File workDir, Map<String, String> env,
+    void executeApplyWithPlan(PluginStepContext context, File workDir, Map<String, String> env,
                                      String terraformPath, String variables, String variableFiles, String additionalParameters) {
         // Construct command: terraform apply -auto-approve tfplan
         List<String> args = ["apply", "-auto-approve", "tfplan"]
@@ -130,7 +137,7 @@ class TerraformCommandExecutor {
         addVariableArgs(args, variables, variableFiles)
         args.addAll(parseAdditionalParameters(additionalParameters))
 
-        def result = runCommand(context, workDir, env, terraformPath, args)
+        def result = commandRunner.run(context, workDir, env, terraformPath, args) //runCommand(context, workDir, env, terraformPath, args)
         if (result.exitValue != 0) {
             throw new StepException("Terraform apply failed for command [${terraformPath} ${args.join(' ')}] with exit code ${result.exitValue}. Output: ${result.output}", PluginFailureReason.TerraformError)
         }
@@ -167,26 +174,26 @@ class TerraformCommandExecutor {
         }
     }
 
-    private static ProcessResult runCommand(PluginStepContext context, File workDir,
-                                            Map<String, String> env, String terraformPath,
-                                            List<String> args) {
-        List<String> cmdArgs = [terraformPath] + args
-
-        ProcessBuilder process = new ProcessBuilder(cmdArgs)
-                .directory(workDir)
-                .redirectErrorStream(true)
-        process.environment().clear()
-        process.environment().putAll(env)
-
-        Process proc = process.start()
-        StringBuilder output = new StringBuilder()
-        proc.inputStream.withReader { reader ->
-            reader.eachLine { line ->
-                output.append(line).append("\n")
-                context.logger.log(2, line)
-            }
-        }
-        proc.waitFor()
-        return new ProcessResult(proc.exitValue(), output.toString())
-    }
+//    private static ProcessResult runCommand(PluginStepContext context, File workDir,
+//                                            Map<String, String> env, String terraformPath,
+//                                            List<String> args) {
+//        List<String> cmdArgs = [terraformPath] + args
+//
+//        ProcessBuilder process = new ProcessBuilder(cmdArgs)
+//                .directory(workDir)
+//                .redirectErrorStream(true)
+//        process.environment().clear()
+//        process.environment().putAll(env)
+//
+//        Process proc = process.start()
+//        StringBuilder output = new StringBuilder()
+//        proc.inputStream.withReader { reader ->
+//            reader.eachLine { line ->
+//                output.append(line).append("\n")
+//                context.logger.log(2, line)
+//            }
+//        }
+//        proc.waitFor()
+//        return new ProcessResult(proc.exitValue(), output.toString())
+//    }
 }

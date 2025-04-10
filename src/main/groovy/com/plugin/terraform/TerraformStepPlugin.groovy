@@ -181,7 +181,7 @@ class TerraformStepPlugin implements StepPlugin {
     private final EnvironmentBuilder environmentBuilder
 
     TerraformStepPlugin() {
-        this.commandExecutor = new TerraformCommandExecutor()
+        this.commandExecutor = new TerraformCommandExecutor(new DefaultCommandRunner())
         this.credentialsManager = new CloudCredentialsManager()
         this.environmentBuilder = new EnvironmentBuilder()
     }
