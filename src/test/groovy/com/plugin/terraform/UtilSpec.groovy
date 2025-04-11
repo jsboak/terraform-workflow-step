@@ -8,39 +8,45 @@ import org.rundeck.storage.api.Resource
 import com.dtolabs.rundeck.core.storage.ResourceMeta
 import org.rundeck.storage.api.StorageException
 import spock.lang.Specification
+import com.dtolabs.rundeck.core.execution.ExecutionListener
+import com.dtolabs.rundeck.plugins.PluginLogger
+
 
 class UtilSpec extends Specification {
 
-    def "getPasswordFromKeyStorage returns correct secret"() {
-        given:
-        // Stub a fake ResourceMeta that writes "testSecret" into the output stream.
-        def fakeResourceMeta = Stub(ResourceMeta) {
-            writeContent(_ as ByteArrayOutputStream) >> { ByteArrayOutputStream os ->
-                os.write("testSecret".bytes)
+    String fakeKeyPath = "keys/fake"
+    String providerPassword = "providerPassword"
+
+    def "Test Correct StorageTree Path"() {
+
+        def storageTree = Mock(StorageTree)
+        def resource = Mock(Resource) {
+            getContents() >> Mock(ResourceMeta) {
+                writeContent(_ as ByteArrayOutputStream) >> { args ->
+                    args[0].write(providerPassword.bytes)
+                    return 13L
+                }
             }
         }
-        // Stub a fake Resource that returns the fakeResourceMeta.
-        def fakeResource = Stub(Resource) {
-            getContents() >> fakeResourceMeta
+        storageTree.getResource(fakeKeyPath) >> resource
+
+        def executionListener = Mock(ExecutionListener)
+        def executionContext = Mock(ExecutionContext) {
+            getExecutionListener() >> executionListener
+            getStorageTree() >> storageTree
         }
-        // Create a stub for StorageTree (from com.dtolabs.rundeck.core.storage) so it returns the fakeResource.
-        def fakeStorageTree = Stub(StorageTree) {
-            getResource("keys/dummy") >> fakeResource
-        }
-        // Build a fake ExecutionContext returning our fake StorageTree.
-        def fakeExecutionContext = Stub(ExecutionContext) {
-            getStorageTree() >> fakeStorageTree
-        }
-        // Create a PluginStepContext stub inline.
-        def context = Stub(PluginStepContext) {
-            getExecutionContext() >> fakeExecutionContext
+        def context = Mock(PluginStepContext) {
+            getExecutionContext() >> executionContext
+            getLogger() >> Mock(PluginLogger)
+            getFrameworkProject() >> "frameworkProject"
         }
 
-        when:
-        def secret = Util.getPasswordFromKeyStorage("keys/dummy", context)
+        when: "getPasswordFromKeyStorage is invoked"
+        def password = Util.getPasswordFromKeyStorage(fakeKeyPath, context)
 
-        then:
-        secret == "testSecret"
+        then: "the expected password is returned"
+        password == providerPassword
+
     }
 
     def "getPasswordFromKeyStorage throws StorageException on error"() {

@@ -16,6 +16,7 @@ class Util {
 
             return password
         } catch (Exception e){
+            println(e)
             throw StorageException.readException(
                 PathUtil.asPath(path), e.getMessage()
             )
