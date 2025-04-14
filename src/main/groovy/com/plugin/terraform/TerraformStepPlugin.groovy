@@ -135,8 +135,8 @@ class TerraformStepPlugin implements StepPlugin {
     @PluginProperty(
             title = "Variables",
             description = "Terraform variables in format key=value (one per line).\nSecrets can be retrieved from Key Storage by using the format `keys://<path>` or `keys/<path>` - for example `PAGERDUTY_TOKEN=keys/path/to/api_token`. You can optionally pass in the variables as a variable from a prior step, such as through `\${data.terraform_vars}`.",
-            required = false,
-            defaultValue = "PAGERDUTY_TOKEN=keys/path/to/api_token"
+            required = false
+//            defaultValue = "PAGERDUTY_TOKEN=keys/path/to/api_token"
     )
     @RenderingOption(key = StringRenderingConstants.DISPLAY_TYPE_KEY, value = "MULTI_LINE")
     @RenderingOption(key = StringRenderingConstants.GROUP_NAME, value = "HCL and Variables")
